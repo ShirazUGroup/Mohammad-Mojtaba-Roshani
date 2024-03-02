@@ -6,10 +6,10 @@ class Console:
         init()
 
     def bg_red(self, text: str) -> None:
-        print(Back.RED + text.upper() + Style.RESET_ALL)
+        print(Back.RED + text + Style.RESET_ALL)
 
-    def bg_green(self, text: str) -> None:
-        print(Back.GREEN + text.upper() + Style.RESET_ALL)
+    def bg_blue(self, text: str) -> None:
+        print(Back.BLUE + text + Style.RESET_ALL)
 
     def error(self, text: str) -> None:
         print(Fore.RED + text + Style.RESET_ALL)

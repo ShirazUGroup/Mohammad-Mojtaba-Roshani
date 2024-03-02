@@ -23,7 +23,7 @@ class PeersCreator:
             self._clg.error("peer_names must have the same length like count")
             raise TypeError("peer_names must have the same length like count")
 
-        self._clg.debug(debug_mode, f"creating {count} peers...")
+        self._clg.bg_blue(f"creating {count} peers...")
         self.peers = self._create_peers(debug_mode, stopwatch, count,
                                         dataset_path, peer_names)
 
@@ -47,11 +47,12 @@ class PeersCreator:
     def parallel_encryption(self) -> bool:
         processes = []
         for peer in self.peers:
-            process = multiprocessing.Process(target=peer.encrypt_local)
-            processes.append(process)
-            process.start()
+            peer.encrypt_local()
+        #     process = multiprocessing.Process(target=peer.encrypt_local)
+        #     processes.append(process)
+        #     process.start()
 
-        for process in processes:
-            process.join()
+        # for process in processes:
+        #     process.join()
 
         return True
