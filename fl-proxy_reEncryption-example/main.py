@@ -5,8 +5,9 @@ import sys
 import argparse
 from typing import List
 from helpers.console import Console
-from components.peers_creator import PeersCreator
 from helpers.random import Random
+from helpers.system import System
+from components.peers_creator import PeersCreator
 from time import time
 
 
@@ -32,7 +33,7 @@ def parse_arguments():
                         help="Enable debug mode to print extra information", default=False)
 
     parser.add_argument("--peer_counts", action="store_true",
-                        help="Enable debug mode to print extra information", default=3)
+                        help="Enable debug mode to print extra information", default=(System().get_cpu_core_count() - 1))
 
     return parser.parse_args()
 
@@ -47,8 +48,9 @@ if __name__ == "__main__":
     clg = Console()
 
     if args.debug_mode:
-        peers = PeersCreator(args.debug_mode, stopwatch, 3, args.dataset_path,
+        peers = PeersCreator(args.debug_mode, stopwatch, args.peer_counts, args.dataset_path,
                              _generate_random_peer_names(args.peer_counts))
+        peers.parallel_encryption()
 
     else:
         clg.bg_red("i am not production ready")

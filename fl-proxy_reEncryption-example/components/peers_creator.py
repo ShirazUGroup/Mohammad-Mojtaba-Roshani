@@ -4,6 +4,7 @@ from time import time
 from components.peer import Peer
 import pandas as pd
 import numpy as np
+import multiprocessing
 
 
 class PeersCreator:
@@ -42,3 +43,15 @@ class PeersCreator:
 
     def get_peers(self):
         return self.peers
+
+    def parallel_encryption(self) -> bool:
+        processes = []
+        for peer in self.peers:
+            process = multiprocessing.Process(target=peer.encrypt_local)
+            processes.append(process)
+            process.start()
+
+        for process in processes:
+            process.join()
+
+        return True
