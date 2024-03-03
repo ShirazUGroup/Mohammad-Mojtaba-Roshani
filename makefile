@@ -14,8 +14,11 @@ pip:
 	pip3 install -r requirements.txt
 
 # debug Proxy Re-Emcryption
+# datasets:
+#	-	 ./data/linear-regression/employee_data.csv		(15KB)
+#	-	./data/mnist/train.csv							(76.8MB)
 dpre:
 	clear &&	\
 	echo "\n\n\n\n YOU ARE IN DEBUG MODE \n\n\n\n" &&	\
-	python3 ./fl-proxy_reEncryption-example/main.py ./employee_data.csv --debug_mode
+	python3 ./fl-proxy_reEncryption-example/main.py ./data/linear-regression/employee_data.csv --debug_mode
 
