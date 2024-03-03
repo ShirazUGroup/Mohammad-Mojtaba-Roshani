@@ -1,17 +1,18 @@
-from typing import List
+from typing import Generator, List
+
+from traitlets import Any
 from helpers.console import Console
-from time import time
+from helpers.stopwatch import Stopwatch
 from components.peer import Peer
 import pandas as pd
 import numpy as np
-import multiprocessing
 
 
 class PeersCreator:
     _clg = None
-    peers: List[Peer] = []
+    peer_list: List[Peer] = []
 
-    def __init__(self, debug_mode: bool, stopwatch: float, count: int, dataset_path: str, peer_names=List[str]) -> None:
+    def __init__(self, debug_mode: bool, stopwatch: Stopwatch, count: int, dataset_path: str, peer_names=List[str]) -> None:
 
         self._clg = Console()
 
@@ -24,10 +25,10 @@ class PeersCreator:
             raise TypeError("peer_names must have the same length like count")
 
         self._clg.bg_blue(f"creating {count} peers...")
-        self.peers = self._create_peers(debug_mode, stopwatch, count,
-                                        dataset_path, peer_names)
+        self.peer_list = self._create_peers(debug_mode, stopwatch, count,
+                                            dataset_path, peer_names)
 
-    def _create_peers(self, debug_mode: bool, stopwatch: float, count: int, dataset_path: str, peer_names: List[str]) -> List[Peer]:
+    def _create_peers(self, debug_mode: bool, stopwatch: Stopwatch, count: int, dataset_path: str, peer_names: List[str]) -> List[Peer]:
         peers: List[Peer] = []
 
         self._clg.debug(debug_mode, f"reading dataset from {dataset_path}...")
@@ -42,17 +43,11 @@ class PeersCreator:
         return peers
 
     def get_peers(self):
-        return self.peers
+        return self.peer_list
 
-    def parallel_encryption(self) -> bool:
-        processes = []
-        for peer in self.peers:
-            peer.encrypt_local()
-        #     process = multiprocessing.Process(target=peer.encrypt_local)
-        #     processes.append(process)
-        #     process.start()
+    # TODO: make it parallel
+    # TODO: make it type safe
+    def parallel_encryption(self) -> Generator[Any, Any, Any]:
 
-        # for process in processes:
-        #     process.join()
-
-        return True
+        for peer in self.peer_list:
+            yield peer.encrypt_local()

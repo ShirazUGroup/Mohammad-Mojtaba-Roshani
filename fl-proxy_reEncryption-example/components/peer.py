@@ -1,11 +1,14 @@
 #############
 #   MODULES #
 #############
+from typing import List, Tuple
 import pandas as pd
 from cryptography.fernet import Fernet
+from umbral import Capsule, PublicKey, VerifiedKeyFrag
 from helpers.console import Console
 from helpers.security.aes import AES
-from helpers.security.rsa import RSA
+from helpers.security.pre import ProxyReEncryption
+from helpers.stopwatch import Stopwatch
 
 
 class Peer:
@@ -15,11 +18,9 @@ class Peer:
     _cipher: Fernet
     _debug: bool
     _name: str
-    _private_key: bytes
-    public_key: bytes
-    transformed_symmetric_key: str
+    pre: ProxyReEncryption
 
-    def __init__(self, debug_mode: bool, stopwatch: float, dataframe: pd.DataFrame, name: str) -> None:
+    def __init__(self, debug_mode: bool, stopwatch: Stopwatch, dataframe: pd.DataFrame, name: str) -> None:
         self._clg = Console()
         self._clg.bg_blue(f"peer {name} is initializing...")
 
@@ -34,17 +35,22 @@ class Peer:
         # Generating
         self._key = AES().gen_key()
         self._cipher = AES().gen_cipher(self._key)
-        # TODO: the name and password are same here for simplicity, change them
-        rsa_pme = RSA(self._debug, self._name, self._name).gen_pme_keys()
-        self._private_key = rsa_pme.private_key
-        self.public_key = rsa_pme.public_key
-        self.transformed_symmetric_key: str = rsa_pme.encryption(
+        self.pre = ProxyReEncryption(self._debug)
+
+    def assimetric_key_encryption(self) -> Tuple[Capsule, bytes]:
+        capsule, ciphertext = self.pre.encryption(
             self._key)
 
-    def encrypt_local(self) -> None:
+        return capsule, ciphertext
+
+    def encrypt_local(self) -> str:
         df_str = self._df.to_csv(index=False).encode()
         encrypted_data = self._cipher.encrypt(df_str).decode()
-        self._clg.debug(self._debug, f"the encrypted data is: \n{
-                        encrypted_data} \nand the data length is: {len(encrypted_data)}")
+        self._clg.debug(self._debug, f"""the encrypted data for: {
+                        self._name} have done and the data length is: {len(encrypted_data)}""")
 
         return encrypted_data
+
+    def grant_assimetric_key_encryption(self, receiving_pk: PublicKey) -> List[VerifiedKeyFrag]:
+
+        return self.pre.transfer_encryption(receiving_pk)

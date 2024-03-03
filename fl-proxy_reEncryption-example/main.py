@@ -6,9 +6,9 @@ import argparse
 from typing import List
 from helpers.console import Console
 from helpers.random import Random
-from helpers.system import System
+from helpers.stopwatch import Stopwatch
+from components.peer import Peer
 from components.peers_creator import PeersCreator
-from time import time
 
 
 ###########
@@ -33,7 +33,7 @@ def parse_arguments():
                         help="Enable debug mode to print extra information", default=False)
 
     parser.add_argument("--peer_counts", action="store_true",
-                        help="Enable debug mode to print extra information", default=(System().get_cpu_core_count() - 1))
+                        help="Enable debug mode to print extra information", default=3)
 
     return parser.parse_args()
 
@@ -43,15 +43,61 @@ def parse_arguments():
 
 
 if __name__ == "__main__":
-    stopwatch = time()
     args = parse_arguments()
     clg = Console()
+    debug: bool = args.debug_mode
+    stopwatch = Stopwatch()
 
-    if args.debug_mode:
-        peers = PeersCreator(args.debug_mode, stopwatch, args.peer_counts, args.dataset_path,
+    if debug:
+        """
+            phase zero ->   peers initialization
+        """
+        peers = PeersCreator(debug, stopwatch, args.peer_counts, args.dataset_path,
                              _generate_random_peer_names(args.peer_counts))
-        peers.parallel_encryption()
 
+        alice: Peer = peers.peer_list[0]
+        bob: Peer = peers.peer_list[1]
+
+        clg.success(f"""consumed time for peers initialization is {
+            stopwatch.delta()}""")
+        stopwatch.reset()
+
+        """
+            phase one ->    encrypt dataset
+        """
+        encrypted_data_list: List[str] = []
+
+        for encrypted_data in peers.parallel_encryption():
+            encrypted_data_list.append(encrypted_data)
+
+        clg.success(f"""consumed data encryption time is {
+            stopwatch.delta()}""")
+        stopwatch.reset()
+
+        """
+            phase two ->    encrypt alice asymmetric key
+            a test to see if bob can open alice encrypted capsule with his own secret key (must be fail)
+        """
+        alice__assimetric_key_capsule, alice_assimetric_key_encrypted = alice.assimetric_key_encryption()
+        clg.debug(debug, f"""the alice encrypted assimetric capsule is {
+                  alice__assimetric_key_capsule}""")
+
+        clg.success(f"""consumed symmetric key encryption time is  {
+            stopwatch.delta()}""")
+
+        try:
+            fail_decrypted_data = bob.pre.decrypt_original(
+                capsule=alice__assimetric_key_capsule,
+                ciphertext=alice_assimetric_key_encrypted)
+        except ValueError:
+            clg.warn("decryption failed! Bob doesn't has access granted yet.")
+        finally:
+            stopwatch.reset()
+
+        """
+            phase three ->    grant decryption
+            alice provide encryption grant to bob
+        """
     else:
-        clg.bg_red("i am not production ready")
+        clg.bg_red("i am not production ready yet!")
         sys.exit(1)

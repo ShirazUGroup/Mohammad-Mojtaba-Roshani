@@ -12,14 +12,14 @@ class Console:
         print(Back.BLUE + text + Style.RESET_ALL)
 
     def error(self, text: str) -> None:
-        print(Fore.RED + text + Style.RESET_ALL)
+        print(Fore.RED + f"ERROR>\t{text}" + Style.RESET_ALL)
 
     def debug(self, debug: bool,  text: str) -> None:
         if debug:
-            print(Fore.CYAN + f"DEBUG>\t {text}" + Style.RESET_ALL)
+            print(Fore.CYAN + f"DEBUG>\t{text}" + Style.RESET_ALL)
 
     def warn(self, text: str) -> None:
         print(Fore.YELLOW + text + Style.RESET_ALL)
 
     def success(self, text: str) -> None:
-        print(Fore.YELLOW + text + Style.RESET_ALL)
+        print(Fore.GREEN + f"SUCCESS> {text}" + Style.RESET_ALL)
