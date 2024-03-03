@@ -11,6 +11,9 @@ class Console:
     def bg_blue(self, text: str) -> None:
         print(Back.BLUE + text + Style.RESET_ALL)
 
+    def bg_green(self, text: str) -> None:
+        print(Back.GREEN + text + Style.RESET_ALL)
+
     def error(self, text: str) -> None:
         print(Fore.RED + f"ERROR>\t{text}" + Style.RESET_ALL)
 
@@ -19,7 +22,7 @@ class Console:
             print(Fore.CYAN + f"DEBUG>\t{text}" + Style.RESET_ALL)
 
     def warn(self, text: str) -> None:
-        print(Fore.YELLOW + text + Style.RESET_ALL)
+        print(Fore.YELLOW + f"{text}" + Style.RESET_ALL)
 
     def success(self, text: str) -> None:
         print(Fore.GREEN + f"SUCCESS> {text}" + Style.RESET_ALL)

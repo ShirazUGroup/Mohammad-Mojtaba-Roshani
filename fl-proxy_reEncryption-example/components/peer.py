@@ -1,6 +1,7 @@
 #############
 #   MODULES #
 #############
+import io
 from typing import List, Tuple
 import pandas as pd
 from cryptography.fernet import Fernet
@@ -33,8 +34,8 @@ class Peer:
         self._debug = debug_mode
         self._name = name
         # Generating
-        self._key = AES().gen_key()
-        self._cipher = AES().gen_cipher(self._key)
+        self._key = AES.gen_key()
+        self._cipher = AES.gen_cipher(self._key)
         self.pre = ProxyReEncryption(self._debug)
 
     def assimetric_key_encryption(self) -> Tuple[Capsule, bytes]:
@@ -43,14 +44,25 @@ class Peer:
 
         return capsule, ciphertext
 
-    def encrypt_local(self) -> str:
+    def encrypt_local(self) -> bytes:
         df_str = self._df.to_csv(index=False).encode()
-        encrypted_data = self._cipher.encrypt(df_str).decode()
+        encrypted_data = self._cipher.encrypt(df_str)
         self._clg.debug(self._debug, f"""the encrypted data for: {
                         self._name} have done and the data length is: {len(encrypted_data)}""")
 
         return encrypted_data
 
-    def grant_assimetric_key_encryption(self, receiving_pk: PublicKey) -> List[VerifiedKeyFrag]:
+    def decrypt_dataframe(self, key: bytes, encrypted_data_bytes: bytes, node_name: str | None = None) -> pd.DataFrame:
+        new_cipher: Fernet = AES.gen_cipher(key)
+        decrypted_data = new_cipher.decrypt(
+            encrypted_data_bytes).decode('utf-8')
 
-        return self.pre.transfer_encryption(receiving_pk)
+        generated_df: pd.DataFrame = pd.read_csv(io.StringIO(decrypted_data))
+
+        if node_name == None:
+            node_name = self._name
+
+        self._clg.debug(self._debug, f"""the decrypted data for: {
+                        node_name} have done""")
+
+        return generated_df

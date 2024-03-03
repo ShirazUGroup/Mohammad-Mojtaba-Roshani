@@ -38,7 +38,7 @@ class ProxyReEncryption:
 
         return cleartext
 
-    def transfer_encryption(self, receiving_pk: PublicKey, threshold: int = 1, shares: int = 10) -> List[VerifiedKeyFrag]:
+    def transfer_encryption_grant(self, receiving_pk: PublicKey, threshold: int, shares: int) -> List[VerifiedKeyFrag]:
 
         kfrags = generate_kfrags(delegating_sk=self.secret_key,
                                  receiving_pk=receiving_pk,
@@ -48,7 +48,7 @@ class ProxyReEncryption:
 
         return kfrags
 
-    def re_encryption(self, capsule: Capsule, kfrags: List[VerifiedKeyFrag], kfrag: VerifiedKeyFrag, threshold: int = 1,):
+    def re_encryption(self, capsule: Capsule, kfrags: List[VerifiedKeyFrag], threshold: int):
 
         cfrags = list()                     # receiver cfrag collection
         for kfrag in kfrags[:threshold]:
@@ -57,11 +57,11 @@ class ProxyReEncryption:
 
         return cfrags
 
-    def decrypt(self, receiver_secret_key, sender_public_key, capsule: Capsule, cfrags: List[VerifiedCapsuleFrag], ciphertext: bytes) -> bytes:
+    def decrypt(self, receiver_secret_key, sender_public_key, capsule: Capsule, verified_cfrags: List[VerifiedCapsuleFrag], ciphertext: bytes) -> bytes:
         cleartext = decrypt_reencrypted(receiving_sk=receiver_secret_key,
                                         delegating_pk=sender_public_key,
                                         capsule=capsule,
-                                        cfrags=cfrags,
+                                        verified_cfrags=verified_cfrags,
                                         ciphertext=ciphertext)
 
         return cleartext
